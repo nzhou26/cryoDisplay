@@ -359,38 +359,48 @@ app.get('/project/:id/sample_screen', function(req, res){
             }
         }
         pool.query('SELECT * FROM ' + project.name, function(err, rows, fields){
-            var gridList = [];
-            for (var i = 0; i < rows.length; i++){
-                var grid = {
-                    'id':rows[i].id,
-                    'date':rows[i].date/*,
-                    'column':rows[i].column,
-                    'buffer':rows[i].buffer,
-                    'loading_volume':rows[i].loading_volume,
-                    'loading_concentration':rows[i].loading_concentration,
-                    'gel_filtration':rows[i].gel_filtration,
-                    'protein_electrophoresis':rows[i].buffer,
-                    '':rows[i].buffer,
-*/              }
-                //console.log("grid"  + grid);
-                gridList.push(grid);
-            }
-            var dateHeader = [];
-            dateHeader.push(gridList[0].date);
-            for (var i = 1; i < gridList.length; i++){
-                if (gridList[i].date != gridList[i-1].date){
-                    dateHeader.push(gridList[i].date);
+            if (err){
+                console.log('-----------------------------------------------------------------');
+                console.log(now.toLocaleString() + ": checking sample screening on: " + project.name + JSON.stringify(gridList));
+                //console.log(project.name);
+                console.log('-----------------------------------------------------------------\n');
+                res.render('sample_screen', {"project":project});
+            } else{
+                var gridList = [];
+                for (var i = 0; i < rows.length; i++){
+                    var grid = {
+                        'id':rows[i].id,
+                        'date':rows[i].date/*,
+                        'column':rows[i].column,
+                        'buffer':rows[i].buffer,
+                        'loading_volume':rows[i].loading_volume,
+                        'loading_concentration':rows[i].loading_concentration,
+                        'gel_filtration':rows[i].gel_filtration,
+                        'protein_electrophoresis':rows[i].buffer,
+                        '':rows[i].buffer,
+    */              }
+                    //console.log("grid"  + grid);
+                    gridList.push(grid);
                 }
+                var dateHeader = [];
+                dateHeader.push(gridList[0].date);
+                for (var i = 1; i < gridList.length; i++){
+                    if (gridList[i].date != gridList[i-1].date){
+                        dateHeader.push(gridList[i].date);
+                    }
+                }
+                console.log('-----------------------------------------------------------------');
+                console.log(now.toLocaleString() + ": checking sample screening on: " + project.name + JSON.stringify(gridList));
+                //console.log(project.name);
+                console.log('-----------------------------------------------------------------\n');
+                res.render('sample_screen', {"project": project, "gridList": gridList, "dateHeader": dateHeader});
             }
-            console.log('-----------------------------------------------------------------');
-            console.log(now.toLocaleString() + ": checking sample screening on: " + project.name + JSON.stringify(gridList));
-            //console.log(project.name);
-            console.log('-----------------------------------------------------------------\n');
-            res.render('sample_screen', {"project": project, "gridList": gridList, "dateHeader": dateHeader});
+            
         })
     });
 });
 
+//app.get('/sample_screen')
 app.get('/project/:id/data_process', function(req, res){
     var now = new Date();
     console.log('-----------------------------------------------------------------');
@@ -406,26 +416,28 @@ app.get('/:name/grid_detail/:id', function(req, res){
         var gridPara = {
             'id':rows[0].id,
             'date':rows[0].date,
-            'column':rows[0].column,
-            'buffer':rows[0].buffer,
-            'loading_volume':rows[0].loading_volume,
-            'loading_concentration':rows[0].loading_concentration,
-            'gel_filtration':rows[0].gel_filtration,
-            'protein_electrophoresis':rows[0].protein_electrophoresis,
+            'Column':rows[0].column,
+            'Buffer':rows[0].buffer,
+            'Loading Volume':rows[0].loading_volume,
+            'Loading Concentration':rows[0].loading_concentration,
+            'Glow Discharge':rows[0].glow_discharge,
+            'Blot Time':rows[0].blot_time,
+            'Blot Force':rows[0].blot_force,
+            'Grid Type':rows[0].grid_type,
+            'Sample Concentration':rows[0].sample_concentration,
             'atlas':rows[0].atlas,
             'view':rows[0].view,
             'record':rows[0].record,
-            'glow_discharge':rows[0].glow_discharge,
-            'blot_time':rows[0].blot_time,
-            'grid_type':rows[0].grid_type,
-            'sample_concentration':rows[0].sample_concentration
+            'gel_filtration':rows[0].gel_filtration,
+            'protein_electrophoresis':rows[0].protein_electrophoresis,
+            'name':req.params.name
         } 
         //console.log("SELECT * FROM '" + req.params.name + "' WHERE id = " + req.params.id);
         console.log('-----------------------------------------------------------------');
         //console.log(JSON.stringify(rows));
         console.log(now.toLocaleString() + ": checking grid " + req.params.id + " on " + req.params.name);
         console.log('-----------------------------------------------------------------\n');
-        res.render('grid_detail')//, {"gridPara": gridPara});
+        res.render('grid_detail', {"gridPara": gridPara});
     });
 });
 

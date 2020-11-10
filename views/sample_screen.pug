@@ -14,24 +14,30 @@ html
     body
         h1= project.name 
         p5= project.owner
-    table#myTable
-        - for (var i = 0; i< gridList.length; i++){
-            - if (i == 0 ||gridList[i].date != gridList[i-1].date){
-                - var dateNow = gridList[i].date;
-                tr
-                    th= gridList[i].date
-                tr
-                - if (gridList[i].date == dateNow){
-                    td
-                        a(href= "/" + project.name + '/grid_detail/'+ gridList[i].id) GRID 1
-                    - var j = 2;
+        br
+    - if (gridList === undefined) {
+        a(href = ('/project/' + project.id + "/sample_screen") ) initiate
+    - } else {
+        table#myTable
+            - for (var i = 0; i< gridList.length; i++){
+                - if (i == 0 ||gridList[i].date != gridList[i-1].date){
+                    - var dateNow = gridList[i].date;
+                    tr
+                        th= gridList[i].date
+                    tr
+                    - if (gridList[i].date == dateNow){
+                        td
+                            a(href= "/" + project.name + '/grid_detail/'+ gridList[i].id) GRID 1
+                        - var j = 2;
+                    - }
+                - } else if (i != 0){
+                        td
+                            a(href= "/" + project.name + '/grid_detail/'+ gridList[i].id) GRID #{j} 
+                            - j = j + 1;
                 - }
-            - } else if (i != 0){
-                    td
-                        a(href= "/" + project.name + '/grid_detail/'+ gridList[i].id) GRID #{j} 
-                        - j = j + 1;
             - }
-        - }
+    - }
+
 //-        for grid in gridList
             tr
                 th= grid.date

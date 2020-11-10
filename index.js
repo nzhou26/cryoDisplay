@@ -430,11 +430,16 @@ app.get('/:name/grid_detail/:id', function(req, res){
 });
 
 app.post('/:name/grid_detail/:id', function(req, res, next){
+    var now = new Date();
+    
     upload(req,res,function(err){
         if(err){
             res.send(err);
         }
         else{
+            console.log('-----------------------------------------------------------------');
+            console.log(now.toLocaleString() + ": checking grid " + req.params.id + " on " + req.params.name);
+            console.log('-----------------------------------------------------------------\n');
             res.render('grid_detail');
         }
     })

@@ -431,16 +431,20 @@ app.get('/:name/grid_detail/:id', function(req, res){
 
 app.post('/:name/grid_detail/:id', function(req, res, next){
     var now = new Date();
-    
+    var gridPara = {
+        'id':req.body.id,
+        'name':req.body.name
+    }
     upload(req,res,function(err){
         if(err){
             res.send(err);
         }
         else{
+            console.log('test:' + gridPara.id);
             console.log('-----------------------------------------------------------------');
-            console.log(now.toLocaleString() + ": checking grid " + req.params.id + " on " + req.params.name);
+            console.log(now.toLocaleString() + ": upload info for grid " + req.params.id + " on " + req.params.name);
             console.log('-----------------------------------------------------------------\n');
-            res.render('grid_detail');
+            res.render('upload_done',{"gridPara": gridPara});
         }
     })
 });

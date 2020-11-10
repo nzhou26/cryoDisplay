@@ -1,0 +1,72 @@
+html
+    head 
+        title screening
+    style. 
+        table {
+            border-spacing: 0;
+            width: 70%;
+            border: 5px solid #ddd;
+        }
+        th, td {
+            text-align: left;
+            padding: 16px;
+        }
+    body
+        h1= project.name 
+        p5= project.owner
+    table#myTable
+        - for (var i = 0; i< gridList.length; i++){
+            - if (i == 0 ||gridList[i].date != gridList[i-1].date){
+                - var dateNow = gridList[i].date;
+                tr
+                    th= gridList[i].date
+                tr
+                - if (gridList[i].date == dateNow){
+                    td
+                        a(href= "/" + project.name + '/grid_detail/'+ gridList[i].id) GRID 1
+                    - var j = 2;
+                - }
+            - } else if (i != 0){
+                    td
+                        a(href= "/" + project.name + '/grid_detail/'+ gridList[i].id) GRID #{j} 
+                        - j = j + 1;
+            - }
+        - }
+//-        for grid in gridList
+            tr
+                th= grid.date
+                if grid.date != grid.
+            tr
+                for i in 
+                td
+                    a(href='/data_para/')#gridNumber
+    p#date
+
+
+    style. 
+        table {
+            border-spacing: 0;
+            width: 70%;
+            border: 1px solid #ddd;
+        }
+        th, td {
+            text-align: left;
+            padding: 16px;
+        }
+        tr:nth-child(even) {
+            background-color: #f2f2f2
+        }
+    script.
+        var x, table, rows;
+        table = document.getElementById("myTable");
+        rows = table.rows;
+        x = rows[i].getElementByTagName("TD") [0];
+        
+        document.getElementById("date").innerHTML = x;
+//-        var text = "";
+        var i = 0;
+        for (i= 0; i< 5; i++){
+            text += "test" + gridList[i];
+        }
+        var test = gridList;
+        document.getElementById("date").innerHTML = test;

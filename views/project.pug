@@ -1,0 +1,22 @@
+html
+    head 
+        title= 'cryoDisplay projects'
+        style
+            include style.css
+    body 
+        h1= 'cryoDisplay projects'
+    table
+        tr
+            td= 'id'
+            td= 'Project'
+            td= 'Owner'
+            td= 'Number Of Structures'
+
+        for project in projectsList
+            tr
+                td= project.id
+                td
+                    a(href='/project/'+project.id) #{project.name}
+                td= project.owner
+                td= project.numberOfStructures
+        

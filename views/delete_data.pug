@@ -1,0 +1,11 @@
+html
+    head
+        title= 'delete'
+    body
+        h1 #{date}
+        h3= 'Are you sure you want to delete these data collection parameters?' 
+        form(action = "/data_para/:date/edit", method = "POST")
+            a(href="/data_para")
+                button Yes
+            a(href="/data_para"+ date)
+                button No

@@ -1,0 +1,10 @@
+CREATE TABLE `cryoDisplay`.`rhs` (
+  `id` INT NOT NULL,
+  `date` VARCHAR(45) NULL,
+  `column` VARCHAR(45) NULL,
+  `buffer` VARCHAR(45) NULL,
+  `loading_volume` VARCHAR(45) NULL,
+  `loading_concentration` VARCHAR(45) NULL,
+  `gel_filt` VARCHAR(45) NULL,
+  `protein_electronphoresis` VARCHAR(45) NULL,
+  PRIMARY KEY (`id`));

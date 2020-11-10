@@ -1,0 +1,67 @@
+html
+head
+    title add_data
+    body
+        form(action = "/add_data", method = "POST")
+            div 
+                label(for = "date") Date: 
+                input(name = "date") 
+                p For better sorting and arrangement of the data, please fill out Date as "20xx-xx-xx".
+            br
+            div
+                label(for = "name") Project Name: 
+                input(name = "name")
+            br
+            div 
+                label(for = "collected_by") Collected by: 
+                input(name = "collected_by")
+            br
+            div
+                label(for = "voltage") Voltage(kV): 
+                input(name = "voltage")
+            br
+            div 
+                label(for = "magnification") Magnification: 
+                input(name = "magnification")
+            br
+            div 
+                label(for = "exposure_time") Exposure Time(s): 
+                input(name = "exposure_time")
+            br
+            div 
+                label(for = "number_of_frames") Number of Frames: 
+                input(name = "number_of_frames")
+            br
+            div 
+                label(for = "pixel_size") Pixel Size(A/pix): 
+                input(name = "pixel_size")
+            br
+            div 
+                label(for = "dose_rate") Dose Rate(e-/pix/s): 
+                input(name = "dose_rate")
+            br
+            div 
+                label(for = "C2_lens") C2 Lens(%): 
+                input(name = "C2_lens")
+            br
+            div 
+                label(for = "objective_lens") Objective Lens(%): 
+                input(name = "objective_lens")
+            br
+            div 
+                label(for = "C2_aperture") C2 Aperture: 
+                input(name = "C2_aperture")
+            br
+            div 
+                label(for = "spot_size") Spot Size: 
+                input(name = "spot_size")
+            br
+            div 
+                label(for = "defocus_range") Defocus Range(um): 
+                input(name = "defocus_range")
+            br
+            div 
+                label(for = "delay_after_stage_shift") Delay After Stage Shift(s): 
+                input(name = "delay_after_stage_shift")
+            br
+            button(type = "submit") Save

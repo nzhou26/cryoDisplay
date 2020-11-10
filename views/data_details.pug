@@ -1,0 +1,90 @@
+html
+    head
+        title= data.date
+        style
+            include style.css
+    body
+        
+        h1= data.name
+        h3= data.date
+    table
+        tr
+            td= 'Project Name'
+            td= data.name
+        tr
+            td= 'Collected by'
+            td= data.collected_by
+        tr
+            td= 'Voltage(kV)'
+            td= data.voltage
+        tr
+            td= 'Magnification'
+            td= data.magnification
+        tr
+            td= 'Exposure Time(s)'
+            td= data.exposure_time
+        tr
+            td= 'Number of Frames'
+            td= data.number_of_frames
+        tr
+            td= 'Pixel Size(A/pix)'
+            td= data.pixel_size
+        tr
+            td= 'Dose Rate(e-/pix/s)'
+            td= data.dose_rate
+        tr
+            td= 'C2 Lens(%)'
+            td= data.C2_lens
+        tr
+            td= 'Objective Lens(%)'
+            td= data.objective_lens
+        tr
+            td= 'C2 Aperture'
+            td= data.C2_aperture
+        tr
+            td= 'Spot Size'
+            td= data.spot_size
+        tr
+            td= 'Defocus Range(um)'
+            td= data.defocus_range
+        tr
+            td= 'Delay After Stage Shift(s)'
+            td= data.delay_after_stage_shift
+    a(href="/data_para/"+data.date+"/edit")
+        button Edit
+
+    style. 
+        table {
+            border-spacing: 0;
+            width: 70%;
+            border: 1px solid #ddd;
+        }
+        th {
+            cursor: pointer;
+        }
+        th, td {
+            text-align: left;
+            padding: 10px;
+        }
+        tr:nth-child(even) {
+            background-color: #f2f2f2
+        }
+//-
+    a(href="/data_para/" + data.date + "/delete")
+        button Delete
+    p#demo
+    script.
+        $('#form').on('sunmit', function(e){
+            e.preventDefault();
+            $.ajax({
+                url: 'heroAdd',
+                type:'post',
+                dataType:'json',
+                data:(this).serialize(),
+                success:function(data){
+                }
+            });
+        });
+        
+        
+        

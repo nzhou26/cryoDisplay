@@ -1,0 +1,85 @@
+html
+head
+    title edit_data
+    body
+        form(action = "/data_para/:date/edit", method = "POST")
+            div 
+                label(for = "date") Date: 
+                input#date(type="text" name = "date" value=data.date)
+                p For better sorting and arrangement of the data, please fill out Date as "20xx-xx-xx".
+
+            br
+            div
+                label(for = "name") Project Name: 
+                input#name(type="text" name = "name" value=data.name)
+            br
+            div 
+                label(for = "collected_by") Collected by: 
+                input#collected_by(type="text" name = "collected_by" value=data.collected_by)
+            br
+            div 
+                label(for = "voltage") Voltage(kV): 
+                input#voltage(type="text" name = "voltage" value=data.voltage)
+            br
+            div 
+                label(for = "magnification") Magnification: 
+                input#magnification(type="text" name = "magnification" value=data.magnification)
+            br
+            div 
+                label(for = "exposure_time") Exposure Time(s): 
+                input#exposure_time(type="text" name = "exposure_time" value=data.exposure_time)
+            br
+            div 
+                label(for = "number_of_frames") Number of Frames: 
+                input#number_of_frames(type="text" name = "number_of_frames" value=data.number_of_frames)
+            br
+            div 
+                label(for = "pixel_size") Pixel Size(A/pix): 
+                input#pixel_size(type="text" name = "pixel_size" value=data.pixel_size)
+            br
+            div 
+                label(for = "dose_rate") Dose Rate(e-/pix/s): 
+                input#dose_rate(type="text" name = "dose_rate" value=data.dose_rate)
+            br
+            div 
+                label(for = "C2_lens") C2 Lens(%): 
+                input#C2_lens(type="text" name = "C2_lens" value=data.C2_lens)
+            br
+            div 
+                label(for = "objective_lens") Objective Lens(%): 
+                input#objective_lens(type="text" name = "objective_lens" value=data.objective_lens)
+            br
+            div 
+                label(for = "C2_aperture") C2 Aperture: 
+                input#C2_aperture(type="text" name = "C2_aperture" value=data.C2_aperture)
+            br
+            div 
+                label(for = "spot_size") Spot Size: 
+                input#spot_size(type="text" name = "spot_size" value=data.spot_size)
+            br
+            div 
+                label(for = "defocus_range") Defocus Range(um): 
+                input#defocus_range(type="text" name = "defocus_range" value=data.defocus_range)
+            br
+            div 
+                label(for = "delay_after_stage_shift") Delay After Stage Shift(s): 
+                input#delay_after_stage_shift(type="text" name = "delay_after_stage_shift" value=data.delay_after_stage_shift)
+            br
+            button(type = "submit" name = "confirm" value="yes") Save
+            button(type = "submit" onclick="myFunction()" name = "confirm" value= "no") Delete
+//-
+        p#txt2
+        script
+            function myFunction() {
+            var txt;
+            var txt2;
+            var password = prompt("password");
+            if (password == null || password == "" || password != "cryoemdelete"){
+                txt = "yes";
+                txt2 = "wrong password!";
+            } else {
+                txt = "no";
+            }
+            document.getElementById("txt").innerHTML = txt;
+            document.getElementById("txt2").innerHTML = txt2;
+        }

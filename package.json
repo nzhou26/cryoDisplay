@@ -1,0 +1,19 @@
+{
+  "name": "cryodisplay",
+  "version": "1.0.0",
+  "description": "a quick way to display your cryo-em data",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "nzhou26",
+  "license": "ISC",
+  "dependencies": {
+    "body-parser": "^1.19.0",
+    "express": "^4.17.1",
+    "multer": "^1.4.2",
+    "mysql": "^2.18.1",
+    "pug": "^3.0.0",
+    "querystring": "^0.2.0"
+  }
+}

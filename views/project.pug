@@ -4,13 +4,13 @@ html
         style
             include style.css
     body 
-        h1= 'cryoDisplay projects'
+        h1= 'Projects'
     table
         tr
-            td= 'id'
-            td= 'Project'
-            td= 'Owner'
-            td= 'Number Of Structures'
+            th= 'id'
+            th= 'Project'
+            th= 'Owner'
+            th= 'Number Of Structures'
 
         for project in projectsList
             tr
@@ -19,4 +19,22 @@ html
                     a(href='/project/'+project.id) #{project.name}
                 td= project.owner
                 td= project.numberOfStructures
-        
+    br
+    - if (adding){
+        form(action="/project/add", method="POST")
+            label(for = "name") Porject Name: 
+            input(type="text", name = "name")
+            br
+            label(for = "owner") Owner: 
+            input(type="text", name = "owner")
+            br
+            label(for = "numberOfStructures") Number Of Structures: 
+            input(type="text", name = "numberOfStructures")
+            br
+            button(type="submit") Save
+    -} else{
+        form(action="/project/", method="POST")
+            button(type="submit", name="kind", value="add") Add Project
+    - }
+
+    

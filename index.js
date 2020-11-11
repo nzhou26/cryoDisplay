@@ -7,8 +7,10 @@ var app = express();
 var mysql = require('mysql');
 var sql_config = require('./sql_config');
 const path = require('path');
-const { read } = require('fs');
+const { read, truncate } = require('fs');
 var querystring = require('querystring');
+const { query } = require('express');
+const { render } = require('pug');
 
 app.set('view engine', 'pug');
 app.set('views', './views');
@@ -82,7 +84,7 @@ app.get('/project', function(req, res){
                 projectsList.push(project);
             }
             console.log('-----------------------------------------------------------------');
-            console.log(now.toLocaleString() + ": checking projects");        
+            console.log(now.toLocaleString() + ": checking projects");
             console.log('-----------------------------------------------------------------\n');
             res.render('project',{"projectsList":projectsList});
 
@@ -92,6 +94,74 @@ app.get('/project', function(req, res){
     //pool.end();
 });
 
+app.get('/project/add', function(req, res){
+    var now = new Date();
+    var projectsList = [];
+
+    var pool = mysql.createPool(sql_config);
+    var sql = 'SELECT * FROM projectsTable';
+    var adding = true;
+    pool.query(sql,function (err, rows, fields) {
+        if(err){
+            console.log('[SELECT ERROR] - ',err.message);
+        } else{
+            for (var i = 0; i < rows.length; i++) {
+                var project ={
+                    'id':rows[i].id,
+                    'name':rows[i].name,
+                    'owner':rows[i].owner,
+                    'numberOfStructures':rows[i].numberOfStructures
+                }
+                projectsList.push(project);
+            }
+            console.log('-----------------------------------------------------------------');
+            console.log(now.toLocaleString() + ": checking projects");
+            console.log('-----------------------------------------------------------------\n');
+            res.render('project',{"projectsList":projectsList, "adding":adding});
+
+        }        
+           
+    })
+    //pool.end();
+});
+
+app.post('/project/add', function(req,res){
+    var now = new Date();
+    var pool = mysql.createPool(sql_config);
+    var sql_insert = "INSERT INTO projectsTable (name, owner, numberOfStructures) VALUES ?";
+    var sql_sentence = "CREATE TABLE " + req.body.name + " (id INT NOT NULL, date VARCHAR(45), \
+    `column` VARCHAR(45), buffer VARCHAR(45),loading_volume VARCHAR(45), loading_concentration VARCHAR(45),\
+    glow_discharge VARCHAR(45), blot_time VARCHAR(45), blot_force VARCHAR(45), grid_type VARCHAR(45),\
+    sample_concentration VARCHAR(45), atlas VARCHAR(45), view VARCHAR(45), record VARCHAR(45),\
+    gel_filtration VARCHAR(45), protein_electrophoresis VARCHAR(45))" ;
+    var values =[
+        [req.body.name,
+        req.body.owner,
+        req.body.numberOfStructures
+        ]
+    ];
+    pool.query(sql_insert, [values], function(err, result){
+        if (err){
+            console.log(err);
+        } else{
+            pool.query(sql_sentence, function(err, result){
+                if (err){
+                    console.log(err);
+                } else{
+                    res.redirect('/project');
+                }
+            });
+        }
+    })
+
+})
+app.post('/project', function(req, res){
+    var now = new Date();
+    var pool = mysql.createPool(sql_config);
+    if (req.body.kind == "add"){
+        res.redirect('/project/add');
+    }
+})
 app.get('/project/:id', function(req,res){
     var now = new Date();
     var pool = mysql.createPool(sql_config);
@@ -324,7 +394,6 @@ app.post('/data_para/:date/edit', function(req,res) {
             if(err) throw err;
             //console.log("deleted_result:" + result);
         });
-
         pool.query(sql, [values], function(err, result) {
             res.render('show_saved');
             console.log('-----------------------------------------------------------------');
@@ -400,6 +469,33 @@ app.get('/project/:id/sample_screen', function(req, res){
     });
 });
 
+app.post('/project/:id/sample_screen', function(req,res){
+    var now = new Date();
+    var pool = mysql.createPool(sql_config);
+    pool.query('SELECT * FROM projectsTable WHERE id = ' + req.params.id, function(err, rows, fields){
+        var project;
+        if (rows.length == 1){
+            var project ={
+                'id':rows[0].id,
+                'name':rows[0].name,
+                'owner':rows[0].owner,
+                'numberOfStructures':rows[0].numberOfStructures
+            }
+        }
+        var sql_sentence = "CREATE TABLE " + project.name + " (id INT NOT NULL, date VARCHAR(45), `column` VARCHAR(45), buffer VARCHAR(45),loading_volume VARCHAR(45), loading_concentration VARCHAR(45), glow_discharge VARCHAR(45), blot_time VARCHAR(45), blot_force VARCHAR(45), grid_type VARCHAR(45),sample_concentration VARCHAR(45), atlas VARCHAR(45), view VARCHAR(45), record VARCHAR(45),gel_filtration VARCHAR(45), protein_electrophoresis VARCHAR(45))" ;
+        pool.query(sql_sentence, function(err, rows, fields){
+                if (err){
+                    console.log("initializaion failed!");
+                    console.log(sql_sentence);
+                    console.log(err);
+                    res.redirect('/project/' + project.id);
+                } else {
+                    console.log("successfully initialized");
+                    res.redirect('/project/' + project.id + '/sample_screen');
+                }
+            });
+    });
+});
 //app.get('/sample_screen')
 app.get('/project/:id/data_process', function(req, res){
     var now = new Date();
@@ -431,7 +527,7 @@ app.get('/:name/grid_detail/:id', function(req, res){
             'gel_filtration':rows[0].gel_filtration,
             'protein_electrophoresis':rows[0].protein_electrophoresis,
             'name':req.params.name
-        } 
+        }
         //console.log("SELECT * FROM '" + req.params.name + "' WHERE id = " + req.params.id);
         console.log('-----------------------------------------------------------------');
         //console.log(JSON.stringify(rows));
@@ -469,6 +565,9 @@ if(process.argv.length == 3){
     console.log("Usage: nodemon index.js [port]");
 }
 
+app.get('*', function(req, res){
+    res.send('Sorry, this is an invalid URL.');
+});
 /*
 app.get('/data_para/:date/delete', function(req,res){
     res.render("delete_data", {

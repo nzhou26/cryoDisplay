@@ -16,7 +16,8 @@ html
         p5= project.owner
         br
     - if (gridList === undefined) {
-        a(href = ('/project/' + project.id + "/sample_screen") ) initiate
+        form(action="/project/" + project.id + "/sample_screen", method = "POST" )
+            button(type = "submit") initialize
     - } else {
         table#myTable
             - for (var i = 0; i< gridList.length; i++){

@@ -15,10 +15,7 @@ html
         h1= project.name 
         p5= project.owner
         br
-    - if (gridList === undefined) {
-        form(action="/project/" + project.id + "/sample_screen", method = "POST" )
-            button(type = "submit") initialize
-    - } else {
+    - if (gridList !== undefined) {
         table#myTable
             - for (var i = 0; i< gridList.length; i++){
                 - if (i == 0 ||gridList[i].date != gridList[i-1].date){
@@ -38,7 +35,20 @@ html
                 - }
             - }
     - }
-
+    - if (adding){
+        form(action="/project/" + project.id + "/sample_screen/add", method = "POST" )
+            label(for = "date") Date: 
+            input(type="text", name = "date")
+            p For better sorting and arrangement of the data, please fill out Date as "20xx-xx-xx".
+            br
+            label(for = "numberOfGrids") Number Of Grids: 
+            input(type="text", name = "numberOfGrids")
+            br
+            button(type="submit") Save
+    - } else{
+        form(action="/project/" + project.id + "/sample_screen", method = "POST" )
+            button(type = "submit") Add
+    - }
 //-        for grid in gridList
             tr
                 th= grid.date

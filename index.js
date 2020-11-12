@@ -22,6 +22,19 @@ app.use(express.static('public'));
 
 app.use('../uploads', express.static(path.join(__dirname, '../uploads')));
 
+function isEmpty(obj){
+    for (var key in obj){
+        if(obj.hasOwnProperty(key))
+            return false;
+    }
+    return true;
+}
+
+function getDateNow(){
+    var now = new Date();
+    return now;
+}
+
 var storage = multer.diskStorage({
     destination: function(req, file, cb) {
         cb(null, '../uploads');
@@ -51,21 +64,19 @@ var upload = multer({
 }).single("mypic");
 
 app.get('/', function(req, res){
-    var now = new Date();
+    
     res.render('home_page',{
         url_project:"/project",
         url_data_para:"/data_para"
     });
     //console.log(process.argv);
     console.log('-----------------------------------------------------------------');
-    console.log(now.toLocaleString() + ": checking homepage");
+    console.log(getDateNow().toLocaleString() + ": checking homepage");
     console.log('-----------------------------------------------------------------\n');
 });
 
 app.get('/project', function(req, res){
-    var now = new Date();
     var projectsList = [];
-
     var pool = mysql.createPool(sql_config);
     var sql = 'SELECT * FROM projectsTable';
 
@@ -84,7 +95,7 @@ app.get('/project', function(req, res){
                 projectsList.push(project);
             }
             console.log('-----------------------------------------------------------------');
-            console.log(now.toLocaleString() + ": checking projects");
+            console.log(getDateNow().toLocaleString() + ": checking projects");
             console.log('-----------------------------------------------------------------\n');
             res.render('project',{"projectsList":projectsList});
 
@@ -95,9 +106,7 @@ app.get('/project', function(req, res){
 });
 
 app.get('/project/add', function(req, res){
-    var now = new Date();
     var projectsList = [];
-
     var pool = mysql.createPool(sql_config);
     var sql = 'SELECT * FROM projectsTable';
     var adding = true;
@@ -115,7 +124,7 @@ app.get('/project/add', function(req, res){
                 projectsList.push(project);
             }
             console.log('-----------------------------------------------------------------');
-            console.log(now.toLocaleString() + ": checking projects");
+            console.log(getDateNow().toLocaleString() + ": checking projects");
             console.log('-----------------------------------------------------------------\n');
             res.render('project',{"projectsList":projectsList, "adding":adding});
 
@@ -126,10 +135,10 @@ app.get('/project/add', function(req, res){
 });
 
 app.post('/project/add', function(req,res){
-    var now = new Date();
+    
     var pool = mysql.createPool(sql_config);
     var sql_insert = "INSERT INTO projectsTable (name, owner, numberOfStructures) VALUES ?";
-    var sql_sentence = "CREATE TABLE " + req.body.name + " (id INT NOT NULL, date VARCHAR(45), \
+    var sql_sentence = "CREATE TABLE " + req.body.name + " (id INT NOT NULL PRIMARY KEY, date VARCHAR(45), \
     `column` VARCHAR(45), buffer VARCHAR(45),loading_volume VARCHAR(45), loading_concentration VARCHAR(45),\
     glow_discharge VARCHAR(45), blot_time VARCHAR(45), blot_force VARCHAR(45), grid_type VARCHAR(45),\
     sample_concentration VARCHAR(45), atlas VARCHAR(45), view VARCHAR(45), record VARCHAR(45),\
@@ -156,14 +165,14 @@ app.post('/project/add', function(req,res){
 
 })
 app.post('/project', function(req, res){
-    var now = new Date();
+    
     var pool = mysql.createPool(sql_config);
     if (req.body.kind == "add"){
         res.redirect('/project/add');
     }
 })
 app.get('/project/:id', function(req,res){
-    var now = new Date();
+    
     var pool = mysql.createPool(sql_config);
 
     pool.query('SELECT * FROM projectsTable WHERE id = ' + req.params.id, function(err, rows, fields){
@@ -181,7 +190,7 @@ app.get('/project/:id', function(req,res){
                     'numberOfStructures':rows[0].numberOfStructures
                 }
                 console.log('-----------------------------------------------------------------');
-                console.log(now.toLocaleString() + ": checking project: " + project.name);
+                console.log(getDateNow().toLocaleString() + ": checking project: " + project.name);
                 console.log('-----------------------------------------------------------------\n');
                 res.render('details', {"project": project});
             } else{
@@ -193,8 +202,239 @@ app.get('/project/:id', function(req,res){
     //pool.end();
 });
 
+
+app.get('/project/:id/sample_screen', function(req, res){
+    
+    var pool = mysql.createPool(sql_config);
+
+    pool.query('SELECT * FROM projectsTable WHERE id = ' + req.params.id, function(err, rows, fields){
+        var project;
+        if (rows.length == 1){
+            var project ={
+                'id':rows[0].id,
+                'name':rows[0].name,
+                'owner':rows[0].owner,
+                'numberOfStructures':rows[0].numberOfStructures
+            }
+        }
+        pool.query('SELECT * FROM ' + project.name, function(err, rows, fields){
+            if (err || isEmpty(rows[0])){
+                console.log('-----------------------------------------------------------------');
+                console.log(getDateNow().toLocaleString() + ": checking sample screening on: " + project.name + "; no grids added");
+                //console.log(project.name);
+                console.log('-----------------------------------------------------------------\n');
+                res.render('sample_screen', {"project":project});
+            } else{
+                var gridList = [];
+                for (var i = 0; i < rows.length; i++){
+                    var grid = {
+                        'id':rows[i].id,
+                        'date':rows[i].date/*,
+                        'column':rows[i].column,
+                        'buffer':rows[i].buffer,
+                        'loading_volume':rows[i].loading_volume,
+                        'loading_concentration':rows[i].loading_concentration,
+                        'gel_filtration':rows[i].gel_filtration,
+                        'protein_electrophoresis':rows[i].buffer,
+                        '':rows[i].buffer,
+    */              }
+                    //console.log("grid"  + grid);
+                    gridList.push(grid);
+                }
+                var dateHeader = [];
+                dateHeader.push(gridList[0].date);
+                for (var i = 1; i < gridList.length; i++){
+                    if (gridList[i].date != gridList[i-1].date){
+                        dateHeader.push(gridList[i].date);
+                    }
+                }
+                console.log('-----------------------------------------------------------------');
+                console.log(getDateNow().toLocaleString() + ": checking sample screening on: " + project.name + JSON.stringify(gridList));
+                //console.log(project.name);
+                console.log('-----------------------------------------------------------------\n');
+                res.render('sample_screen', {"project": project, "gridList": gridList, "dateHeader": dateHeader});
+            }
+            
+        })
+    });
+});
+
+app.post('/project/:id/sample_screen/', function(req,res){
+    console.log('-----------------------------------------------------------------');
+    console.log(getDateNow().toLocaleString() + ": adding grids on project #" + req.params.id);
+    console.log('-----------------------------------------------------------------\n');
+    res.redirect('/project/' + req.params.id + '/sample_screen/add');
+})
+
+app.get('/project/:id/sample_screen/add/', function(req, res){
+    
+    var pool = mysql.createPool(sql_config);
+
+    pool.query('SELECT * FROM projectsTable WHERE id = ' + req.params.id, function(err, rows, fields){
+        var project;
+        if (rows.length == 1){
+            var project ={
+                'id':rows[0].id,
+                'name':rows[0].name,
+                'owner':rows[0].owner,
+                'numberOfStructures':rows[0].numberOfStructures
+            }
+        }
+        pool.query('SELECT * FROM ' + project.name, function(err, rows, fields){
+            if (err || isEmpty(rows[0])){
+                console.log('-----------------------------------------------------------------');
+                console.log(getDateNow().toLocaleString() + ": checking sample screening on: " + project.name + "; no grids added");
+                //console.log(project.name);
+                console.log('-----------------------------------------------------------------\n');
+                res.render('sample_screen', {"project":project, "adding": true});
+            } else{
+                var gridList = [];
+                for (var i = 0; i < rows.length; i++){
+                    var grid = {
+                        'id':rows[i].id,
+                        'date':rows[i].date/*,
+                        'column':rows[i].column,
+                        'buffer':rows[i].buffer,
+                        'loading_volume':rows[i].loading_volume,
+                        'loading_concentration':rows[i].loading_concentration,
+                        'gel_filtration':rows[i].gel_filtration,
+                        'protein_electrophoresis':rows[i].buffer,
+                        '':rows[i].buffer,
+    */              }
+                    gridList.push(grid);
+                }
+                var dateHeader = [];
+                dateHeader.push(gridList[0].date);
+                for (var i = 1; i < gridList.length; i++){
+                    if (gridList[i].date != gridList[i-1].date){
+                        dateHeader.push(gridList[i].date);
+                    }
+                }
+                console.log('-----------------------------------------------------------------');
+                console.log(getDateNow().toLocaleString() + ": checking sample screening on: " + project.name + JSON.stringify(gridList));
+                console.log('-----------------------------------------------------------------\n');
+                res.render('sample_screen', {"project": project, 
+                "gridList": gridList, 
+                "dateHeader": dateHeader, 
+                "adding": true});
+            }
+            
+        })
+    });
+});
+
+app.post('/project/:id/sample_screen/add', function(req, res){
+    var pool = mysql.createPool(sql_config);
+    var project;
+    pool.query("SELECT * FROM projectsTable WHERE id = " + req.params.id, function(err, rows, result){
+        project ={
+            'id':rows[0].id,
+            'name':rows[0].name
+        };
+        var date_grid = req.body.date;
+        var date_parsed = req.body.date.split("-");
+        var date_joined = date_parsed[0] + date_parsed[1] + date_parsed[2];
+        var gridList = [];
+        for (var i = 1; i <parseInt(req.body.numberOfGrids) +1; i ++){
+            var id = date_joined + i;
+            var grid= [
+                id,
+                date_grid
+            ];
+            gridList.push(grid);
+        };
+        
+        var sql_insert = "INSERT INTO " + project.name + " (id, date) VALUES ?"
+        console.log(sql_insert);
+        pool.query(sql_insert, [gridList], function(err, rows, result){
+            if (err){
+                console.log("insert err" + JSON.stringify(result));
+            } else{
+                console.log('-----------------------------------------------------------------');
+                console.log(getDateNow().toLocaleString() + ": added grids on project #" + req.params.id);
+                console.log('-----------------------------------------------------------------\n')
+                res.redirect('/project/' + req.params.id + '/sample_screen/')
+            };
+        });
+        
+    });
+    //
+    
+    /*
+    var values =[
+        [   
+            req.body.date
+        ]
+    ];
+    pool.query(sql_insert, [values], function(req, res){
+        console.log('-----------------------------------------------------------------');
+        console.log(getDateNow().toLocaleString() + ": added grids on project #" + req.params.id);
+        console.log('-----------------------------------------------------------------\n');
+
+    });
+    */
+});
+app.get('/project/:id/data_process', function(req, res){
+    
+    console.log('-----------------------------------------------------------------');
+    console.log(getDateNow().toLocaleString() + ": checking data processing on project id: " + req.params.id);
+    console.log('-----------------------------------------------------------------\n');
+    res.render('data_process');
+});
+app.get('/:name/grid_detail/:id', function(req, res){
+    var pool = mysql.createPool(sql_config);
+    
+    pool.query("SELECT * FROM " + req.params.name + " WHERE id = " + req.params.id, function(err, rows, fields){
+        var gridPara = {
+            'id':rows[0].id,
+            'date':rows[0].date,
+            'Column':rows[0].column,
+            'Buffer':rows[0].buffer,
+            'Loading Volume':rows[0].loading_volume,
+            'Loading Concentration':rows[0].loading_concentration,
+            'Glow Discharge':rows[0].glow_discharge,
+            'Blot Time':rows[0].blot_time,
+            'Blot Force':rows[0].blot_force,
+            'Grid Type':rows[0].grid_type,
+            'Sample Concentration':rows[0].sample_concentration,
+            'atlas':rows[0].atlas,
+            'view':rows[0].view,
+            'record':rows[0].record,
+            'gel_filtration':rows[0].gel_filtration,
+            'protein_electrophoresis':rows[0].protein_electrophoresis,
+            'name':req.params.name
+        }
+        //console.log("SELECT * FROM '" + req.params.name + "' WHERE id = " + req.params.id);
+        console.log('-----------------------------------------------------------------');
+        //console.log(JSON.stringify(rows));
+        console.log(getDateNow().toLocaleString() + ": checking grid " + req.params.id + " on " + req.params.name);
+        console.log('-----------------------------------------------------------------\n');
+        res.render('grid_detail', {"gridPara": gridPara});
+    });
+});
+
+app.post('/:name/grid_detail/:id', function(req, res, next){
+    
+    var gridPara = {
+        'id':req.body.id,
+        'name':req.body.name
+    }
+    upload(req,res,function(err){
+        if(err){
+            res.send(err);
+        }
+        else{
+            console.log('test:' + gridPara.id);
+            console.log('-----------------------------------------------------------------');
+            console.log(getDateNow().toLocaleString() + ": upload info for grid " + req.params.id + " on " + req.params.name);
+            console.log('-----------------------------------------------------------------\n');
+            res.render('upload_done',{"gridPara": gridPara});
+        }
+    })
+});
+
 app.get('/data_para', function(req,res){
-    var now = new Date();
+    
     var data_para_list = [];
     var pool = mysql.createPool(sql_config);
     
@@ -212,9 +452,9 @@ app.get('/data_para', function(req,res){
                 data_para_list.push(data_para);
             }
             console.log('-----------------------------------------------------------------');
-            console.log(now.toLocaleString() + ": checking data parameters");
+            console.log(getDateNow().toLocaleString() + ": checking data parameters");
             console.log('-----------------------------------------------------------------\n');
-            res.render('data_para',{"data_para_list":data_para_list}); 
+            res.render('data_para',{"data_para_list":data_para_list});
         }
         
     });
@@ -222,7 +462,7 @@ app.get('/data_para', function(req,res){
 });
 
 app.get('/data_para/:date', function(req,res){
-    var now = new Date();
+    
     var pool = mysql.createPool(sql_config);
 
     pool.query("SELECT * FROM data_collection_para WHERE date = '" + req.params.date + "'", function(err, rows, fields){
@@ -251,7 +491,7 @@ app.get('/data_para/:date', function(req,res){
                     'delay_after_stage_shift':rows[0].delay_after_stage_shift
                 }
                 console.log('-----------------------------------------------------------------');
-                console.log(now.toLocaleString() + ": checking data parameters: " + data.date);
+                console.log(getDateNow().toLocaleString() + ": checking data parameters: " + data.date);
                 console.log('-----------------------------------------------------------------\n');
                 res.render('data_details', {
                     "data": data,
@@ -268,16 +508,16 @@ app.get('/data_para/:date', function(req,res){
 });
 
 app.get('/add_data', function(req, res){
-    var now = new Date();
+    
     console.log('-----------------------------------------------------------------');
-    console.log(now.toLocaleString() + ": adding data");
+    console.log(getDateNow().toLocaleString() + ": adding data");
     console.log('-----------------------------------------------------------------\n');
                 
     res.render('add_data');
 });
 
 app.post('/add_data', function(req,res) {
-    var now = new Date();
+    
 
     var pool = mysql.createPool(sql_config);
     var sql = "INSERT INTO data_collection_para (date, name, collected_by,\
@@ -304,7 +544,7 @@ app.post('/add_data', function(req,res) {
     pool.query(sql, [values], function(err, result) {
         res.render('show_saved');
         console.log('-----------------------------------------------------------------');
-        console.log(now.toLocaleString() + ": adding value: " + JSON.stringify(req.body));
+        console.log(getDateNow().toLocaleString() + ": adding value: " + JSON.stringify(req.body));
         console.log("add_result:" + JSON.stringify(result));
         console.log('-----------------------------------------------------------------\n');
     });
@@ -313,7 +553,7 @@ app.post('/add_data', function(req,res) {
 
 var data_inserted;
 app.get('/data_para/:date/edit', function(req, res) {
-    var now = new Date();
+    
 
     var pool = mysql.createPool(sql_config);
     pool.query("SELECT * FROM data_collection_para WHERE date = '" + req.params.date + "'", function(err, rows, fields){
@@ -346,7 +586,7 @@ app.get('/data_para/:date/edit', function(req, res) {
                     //url_edit: "/data_para/" + data.date + "/edit",
                 });
                 console.log('-----------------------------------------------------------------');
-                console.log(now.toLocaleString() + ": editing detail page on " + data.date);
+                console.log(getDateNow().toLocaleString() + ": editing detail page on " + data.date);
                 console.log('-----------------------------------------------------------------\n');
                 data_inserted = data.date;
                 
@@ -360,7 +600,7 @@ app.get('/data_para/:date/edit', function(req, res) {
 });
 
 app.post('/data_para/:date/edit', function(req,res) {
-    var now = new Date();
+    
 
     var pool = mysql.createPool(sql_config);
 
@@ -397,7 +637,7 @@ app.post('/data_para/:date/edit', function(req,res) {
         pool.query(sql, [values], function(err, result) {
             res.render('show_saved');
             console.log('-----------------------------------------------------------------');
-            console.log(now.toLocaleString() + ": edited " + JSON.stringify(req.body)+ "\n");
+            console.log(getDateNow().toLocaleString() + ": edited " + JSON.stringify(req.body)+ "\n");
             console.log("insert result:" + JSON.stringify(result));
             console.log('-----------------------------------------------------------------\n');
         });
@@ -405,7 +645,7 @@ app.post('/data_para/:date/edit', function(req,res) {
         pool.query(sql_delete, function(err, result){
             if(err) throw err;
             console.log('-----------------------------------------------------------------');
-            console.log(now.toLocaleString() + ": delete " + data_inserted + "\n");
+            console.log(getDateNow().toLocaleString() + ": delete " + data_inserted + "\n");
             console.log("delete result:" + JSON.stringify(result));
             console.log('-----------------------------------------------------------------\n');
             res.render('deleted');
@@ -413,148 +653,9 @@ app.post('/data_para/:date/edit', function(req,res) {
     }
 });
 
-app.get('/project/:id/sample_screen', function(req, res){
-    var now = new Date();
-    var pool = mysql.createPool(sql_config);
 
-    pool.query('SELECT * FROM projectsTable WHERE id = ' + req.params.id, function(err, rows, fields){
-        var project;
-        if (rows.length == 1){
-            var project ={
-                'id':rows[0].id,
-                'name':rows[0].name,
-                'owner':rows[0].owner,
-                'numberOfStructures':rows[0].numberOfStructures
-            }
-        }
-        pool.query('SELECT * FROM ' + project.name, function(err, rows, fields){
-            if (err){
-                console.log('-----------------------------------------------------------------');
-                console.log(now.toLocaleString() + ": checking sample screening on: " + project.name + JSON.stringify(gridList));
-                //console.log(project.name);
-                console.log('-----------------------------------------------------------------\n');
-                res.render('sample_screen', {"project":project});
-            } else{
-                var gridList = [];
-                for (var i = 0; i < rows.length; i++){
-                    var grid = {
-                        'id':rows[i].id,
-                        'date':rows[i].date/*,
-                        'column':rows[i].column,
-                        'buffer':rows[i].buffer,
-                        'loading_volume':rows[i].loading_volume,
-                        'loading_concentration':rows[i].loading_concentration,
-                        'gel_filtration':rows[i].gel_filtration,
-                        'protein_electrophoresis':rows[i].buffer,
-                        '':rows[i].buffer,
-    */              }
-                    //console.log("grid"  + grid);
-                    gridList.push(grid);
-                }
-                var dateHeader = [];
-                dateHeader.push(gridList[0].date);
-                for (var i = 1; i < gridList.length; i++){
-                    if (gridList[i].date != gridList[i-1].date){
-                        dateHeader.push(gridList[i].date);
-                    }
-                }
-                console.log('-----------------------------------------------------------------');
-                console.log(now.toLocaleString() + ": checking sample screening on: " + project.name + JSON.stringify(gridList));
-                //console.log(project.name);
-                console.log('-----------------------------------------------------------------\n');
-                res.render('sample_screen', {"project": project, "gridList": gridList, "dateHeader": dateHeader});
-            }
-            
-        })
-    });
-});
-
-app.post('/project/:id/sample_screen', function(req,res){
-    var now = new Date();
-    var pool = mysql.createPool(sql_config);
-    pool.query('SELECT * FROM projectsTable WHERE id = ' + req.params.id, function(err, rows, fields){
-        var project;
-        if (rows.length == 1){
-            var project ={
-                'id':rows[0].id,
-                'name':rows[0].name,
-                'owner':rows[0].owner,
-                'numberOfStructures':rows[0].numberOfStructures
-            }
-        }
-        var sql_sentence = "CREATE TABLE " + project.name + " (id INT NOT NULL, date VARCHAR(45), `column` VARCHAR(45), buffer VARCHAR(45),loading_volume VARCHAR(45), loading_concentration VARCHAR(45), glow_discharge VARCHAR(45), blot_time VARCHAR(45), blot_force VARCHAR(45), grid_type VARCHAR(45),sample_concentration VARCHAR(45), atlas VARCHAR(45), view VARCHAR(45), record VARCHAR(45),gel_filtration VARCHAR(45), protein_electrophoresis VARCHAR(45))" ;
-        pool.query(sql_sentence, function(err, rows, fields){
-                if (err){
-                    console.log("initializaion failed!");
-                    console.log(sql_sentence);
-                    console.log(err);
-                    res.redirect('/project/' + project.id);
-                } else {
-                    console.log("successfully initialized");
-                    res.redirect('/project/' + project.id + '/sample_screen');
-                }
-            });
-    });
-});
-//app.get('/sample_screen')
-app.get('/project/:id/data_process', function(req, res){
-    var now = new Date();
-    console.log('-----------------------------------------------------------------');
-    console.log(now.toLocaleString() + ": checking data processing on project id: " + req.params.id);
-    console.log('-----------------------------------------------------------------\n');
-    res.render('data_process');
-
-});
-app.get('/:name/grid_detail/:id', function(req, res){
-    var pool = mysql.createPool(sql_config);
-    var now = new Date();
-    pool.query("SELECT * FROM " + req.params.name + " WHERE id = " + req.params.id, function(err, rows, fields){
-        var gridPara = {
-            'id':rows[0].id,
-            'date':rows[0].date,
-            'Column':rows[0].column,
-            'Buffer':rows[0].buffer,
-            'Loading Volume':rows[0].loading_volume,
-            'Loading Concentration':rows[0].loading_concentration,
-            'Glow Discharge':rows[0].glow_discharge,
-            'Blot Time':rows[0].blot_time,
-            'Blot Force':rows[0].blot_force,
-            'Grid Type':rows[0].grid_type,
-            'Sample Concentration':rows[0].sample_concentration,
-            'atlas':rows[0].atlas,
-            'view':rows[0].view,
-            'record':rows[0].record,
-            'gel_filtration':rows[0].gel_filtration,
-            'protein_electrophoresis':rows[0].protein_electrophoresis,
-            'name':req.params.name
-        }
-        //console.log("SELECT * FROM '" + req.params.name + "' WHERE id = " + req.params.id);
-        console.log('-----------------------------------------------------------------');
-        //console.log(JSON.stringify(rows));
-        console.log(now.toLocaleString() + ": checking grid " + req.params.id + " on " + req.params.name);
-        console.log('-----------------------------------------------------------------\n');
-        res.render('grid_detail', {"gridPara": gridPara});
-    });
-});
-
-app.post('/:name/grid_detail/:id', function(req, res, next){
-    var now = new Date();
-    var gridPara = {
-        'id':req.body.id,
-        'name':req.body.name
-    }
-    upload(req,res,function(err){
-        if(err){
-            res.send(err);
-        }
-        else{
-            console.log('test:' + gridPara.id);
-            console.log('-----------------------------------------------------------------');
-            console.log(now.toLocaleString() + ": upload info for grid " + req.params.id + " on " + req.params.name);
-            console.log('-----------------------------------------------------------------\n');
-            res.render('upload_done',{"gridPara": gridPara});
-        }
-    })
+app.get('*', function(req, res){
+    res.send('Sorry, this is an invalid URL.');
 });
 
 if(process.argv.length == 3){
@@ -564,18 +665,3 @@ if(process.argv.length == 3){
     console.log("Please enter the correct port");
     console.log("Usage: nodemon index.js [port]");
 }
-
-app.get('*', function(req, res){
-    res.send('Sorry, this is an invalid URL.');
-});
-/*
-app.get('/data_para/:date/delete', function(req,res){
-    res.render("delete_data", {
-        "date":req.params.date
-    })
-});
-
-app.post('/data_para/:data/delete', function(res, req){
-    console.log(req.body);
-});
-*/

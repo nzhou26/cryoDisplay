@@ -1,16 +1,16 @@
-#!/usr/local/lib/nodejs/node-v12.19.0-linux-x64/bin/nodemon nodemon
+/*
+core process for this nodejs server
+author: Ningkun Zhou
+email: nzhou26@outlook.com
+Haven't written a initailization scripts yet, you have to install mysql by yourself
+*/
 var express = require('express');
 var bodyParser =require('body-parser');
 var multer = require('multer');
-//var upload = multer();
 var app = express();
 var mysql = require('mysql');
 var sql_config = require('./sql_config');
 const path = require('path');
-const { read, truncate } = require('fs');
-var querystring = require('querystring');
-const { query } = require('express');
-const { render } = require('pug');
 
 app.set('view engine', 'pug');
 app.set('views', './views');
@@ -44,7 +44,6 @@ var storage = multer.diskStorage({
         cb(null, file.fieldname + "-" + Date.now() + ".jpg");
     }
 });
-
 
 var upload = multer({ 
     storage: storage, 
@@ -98,7 +97,6 @@ app.get('/project', function(req, res){
             console.log(getDateNow().toLocaleString() + ": checking projects");
             console.log('-----------------------------------------------------------------\n');
             res.render('project',{"projectsList":projectsList});
-
         }        
            
     })
@@ -198,10 +196,8 @@ app.get('/project/:id', function(req,res){
             }
         }
     });
-
     //pool.end();
 });
-
 
 app.get('/project/:id/sample_screen', function(req, res){
     
@@ -229,16 +225,8 @@ app.get('/project/:id/sample_screen', function(req, res){
                 for (var i = 0; i < rows.length; i++){
                     var grid = {
                         'id':rows[i].id,
-                        'date':rows[i].date/*,
-                        'column':rows[i].column,
-                        'buffer':rows[i].buffer,
-                        'loading_volume':rows[i].loading_volume,
-                        'loading_concentration':rows[i].loading_concentration,
-                        'gel_filtration':rows[i].gel_filtration,
-                        'protein_electrophoresis':rows[i].buffer,
-                        '':rows[i].buffer,
-    */              }
-                    //console.log("grid"  + grid);
+                        'date':rows[i].date
+                    }
                     gridList.push(grid);
                 }
                 var dateHeader = [];
@@ -292,15 +280,8 @@ app.get('/project/:id/sample_screen/add/', function(req, res){
                 for (var i = 0; i < rows.length; i++){
                     var grid = {
                         'id':rows[i].id,
-                        'date':rows[i].date/*,
-                        'column':rows[i].column,
-                        'buffer':rows[i].buffer,
-                        'loading_volume':rows[i].loading_volume,
-                        'loading_concentration':rows[i].loading_concentration,
-                        'gel_filtration':rows[i].gel_filtration,
-                        'protein_electrophoresis':rows[i].buffer,
-                        '':rows[i].buffer,
-    */              }
+                        'date':rows[i].date
+                    }
                     gridList.push(grid);
                 }
                 var dateHeader = [];
@@ -358,21 +339,6 @@ app.post('/project/:id/sample_screen/add', function(req, res){
         });
         
     });
-    //
-    
-    /*
-    var values =[
-        [   
-            req.body.date
-        ]
-    ];
-    pool.query(sql_insert, [values], function(req, res){
-        console.log('-----------------------------------------------------------------');
-        console.log(getDateNow().toLocaleString() + ": added grids on project #" + req.params.id);
-        console.log('-----------------------------------------------------------------\n');
-
-    });
-    */
 });
 app.get('/project/:id/data_process', function(req, res){
     
@@ -412,13 +378,47 @@ app.get('/:name/grid_detail/:id', function(req, res){
         res.render('grid_detail', {"gridPara": gridPara});
     });
 });
-
+app.get('/:name/grid_detail/:id/biochem', function(req,res){
+    var pool = mysql.createPool(sql_config);
+    
+    pool.query("SELECT * FROM " + req.params.name + " WHERE id = " + req.params.id, function(err, rows, fields){
+        var gridPara = {
+            'id':rows[0].id,
+            'date':rows[0].date,
+            'Column':rows[0].column,
+            'Buffer':rows[0].buffer,
+            'Loading Volume':rows[0].loading_volume,
+            'Loading Concentration':rows[0].loading_concentration,
+            'Glow Discharge':rows[0].glow_discharge,
+            'Blot Time':rows[0].blot_time,
+            'Blot Force':rows[0].blot_force,
+            'Grid Type':rows[0].grid_type,
+            'Sample Concentration':rows[0].sample_concentration,
+            'atlas':rows[0].atlas,
+            'view':rows[0].view,
+            'record':rows[0].record,
+            'gel_filtration':rows[0].gel_filtration,
+            'protein_electrophoresis':rows[0].protein_electrophoresis,
+            'name':req.params.name
+        }
+        //console.log("SELECT * FROM '" + req.params.name + "' WHERE id = " + req.params.id);
+        console.log('-----------------------------------------------------------------');
+        //console.log(JSON.stringify(rows));
+        console.log(getDateNow().toLocaleString() + ": checking grid " + req.params.id + " on " + req.params.name);
+        console.log('-----------------------------------------------------------------\n');
+        res.render('grid_detail', {"gridPara": gridPara});
+    });
+});
 app.post('/:name/grid_detail/:id', function(req, res, next){
     
     var gridPara = {
         'id':req.body.id,
         'name':req.body.name
     }
+    if (req.body.kind == "biochem"){
+        res.redirect('/:name/grid_detail/:id/biochem');
+    }
+    /*
     upload(req,res,function(err){
         if(err){
             res.send(err);
@@ -431,6 +431,7 @@ app.post('/:name/grid_detail/:id', function(req, res, next){
             res.render('upload_done',{"gridPara": gridPara});
         }
     })
+    */
 });
 
 app.get('/data_para', function(req,res){

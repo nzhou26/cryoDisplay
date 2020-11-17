@@ -4,48 +4,71 @@ html
     body
         h3="Project: " + gridPara.name
         br
+        - var key = Object.keys(gridPara);
         p
             | =======================BIOCHEM==================================
         - if (biochem === undefined) {
-            form(action="/:name/grid_detail/:id" method="POST")
+            form(action="/" + gridPara.name + "/grid_detail/" + gridPara.id, method="POST")
                 button(type="submit" name="kind" value="biochem") Edit Biochem
             table
-                - var key = Object.keys(gridPara);
                 - for (var i = 2; i < 6; i ++){
                     tr
                         th=key[i]
                         td=gridPara[key[i]]
                 - }
             br
-
             p
                 | Gel Filtration
             p
                 | Protein Electrophoresis
         - } else if (biochem){
-            form(action="/:name/grid_detail/:id/biochem" method="POST")
-                label(for="test")
-                input(type="text")
-            form(action="/:name/grid_detail/:id" enctype="multipart/form-data" method="POST")
+            form(action= "/" + gridPara.name + "/grid_detail/" + gridPara.id + "/biochem", enctype="multipart/form-data", method="POST")
+                - for (var i = 2; i < 6; i++){
+                    label(for = key[i]) #{key[i]}: 
+                    input(type="text", name = key[i], value=gridPara[key[i]])
+                    br
+                - }
+                
                 span Upload Profile Picture of Gel Filtration: 
                 input#upload_images(type="file" name="mypic" required="")
                 br
-                input(type="submit" value="submit")
-            form(action="/:name/grid_detail/:id" enctype="multipart/form-data" method="POST")
                 span Upload Profile Picture of Protein Electrophoresis: 
                 input#upload_images(type="file" name="mypic" required="")
                 br
-                input(type="submit" value="submit")
-
+                
+                button(type="submit") Save All Biochem info
         - }
         p
             | =======================SAMPLE MAKING============================
-        form(action="/:name/grid_detail/:id" method="POST")
-            button(type="submit" name="kind" value= "sample_making") Edit Sample Making
-        table
-            - for (var i = 6; i < 11; i ++){
-                tr
-                    th=key[i]
-                    td=gridPara[key[i]]
-            - }
-        br
+        - if (sample_making == undefined) {
+            form(action="/" + gridPara.name + "/grid_detail/" + gridPara.id, method="POST")
+                button(type="submit" name="kind" value= "sample_making") Edit Sample Making
+            table
+                - for (var i = 6; i < 11; i ++){
+                    tr
+                        th=key[i]
+                        td=gridPara[key[i]]
+                - }
+            br
+        - } else if (sample_making) {
+            form(action= "/" + gridPara.name + "/grid_detail/" + gridPara.id + "/sample_making", method="POST")
+                - for (var i = 6; i < 11; i ++) {
+                    label(for = key[i]) #{key[i]}:
+                    input(type= "text", name = key[i], value=gridPara[key[i]])
+                    br
+                -}
+                span Upload Profile Picture of full montage: 
+                input#upload_images(type="file" name="montage_full" required="")
+                br
+                span Upload Profile Picture of square: 
+                input#upload_images(type="file" name="square" required="")
+                br
+                span Upload Profile Picture of view:
+                input#upload_images(type="file" name="view" required="")
+                br
+                span Upload Profile Picture of record:
+                input#upload_images(type="file" name="record" required="")
+                br
+                
+                button(type="submit") Save
+        - }

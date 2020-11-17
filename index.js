@@ -185,14 +185,10 @@ app.get('/project/:id/sample_screen', function(req, res){
         pool.query('SELECT * FROM ' + project.name, function(err, rows, fields){
             if (err || isEmpty(rows[0])){
                 if(req.query.valid == "adding"){
-                    console.log('-----------------------------------------------------------------');
-                    console.log(getDateNow().toLocaleString() + "(get): adding sample screening on: " + project.name + "; no grids added");
-                    console.log('-----------------------------------------------------------------\n');
+                    log_format("adding grids on: " + project.name)
                     res.render('sample_screen', {'project':project, "adding":true})
                 } else {
-                    console.log('-----------------------------------------------------------------');
-                    console.log(getDateNow().toLocaleString() + ": checking sample screening on: " + project.name + "; no grids added");
-                    console.log('-----------------------------------------------------------------\n');
+                    log_format("checking sample screening on: " + project.name)
                     res.render('sample_screen', {"project":project});
                 }
             } else{
@@ -212,9 +208,7 @@ app.get('/project/:id/sample_screen', function(req, res){
                     }
                 }
                 if (req.query.valid == "adding"){
-                    console.log('-----------------------------------------------------------------');
-                    console.log(getDateNow().toLocaleString() + ": (get) adding sample screening on: " + project.name );
-                    console.log('-----------------------------------------------------------------\n');
+                    log_format("adding grids on: " + project.name)
                     res.render('sample_screen', {
                         "project":project, 
                         "gridList":gridList, 
@@ -222,9 +216,7 @@ app.get('/project/:id/sample_screen', function(req, res){
                         "adding":true
                     });
                 } else{
-                    console.log('-----------------------------------------------------------------');
-                    console.log(getDateNow().toLocaleString() + ": checking sample screening on: " + project.name );
-                    console.log('-----------------------------------------------------------------\n');
+                    log_format("checking sample screening on: " + project.name)
                     res.render('sample_screen', {
                         "project": project, 
                         "gridList": gridList, 
@@ -237,9 +229,7 @@ app.get('/project/:id/sample_screen', function(req, res){
 });
 
 app.post('/project/:id/sample_screen/', function(req,res){
-    console.log('-----------------------------------------------------------------');
-    console.log(getDateNow().toLocaleString() + ": adding grids on project #" + req.params.id);
-    console.log('-----------------------------------------------------------------\n');
+    log_format("redirecting to adding grids on project #" + req.params.id);
     res.redirect(url.format({
         pathname:'/project/' + req.params.id + '/sample_screen/',
         query:{"valid":"adding"}
@@ -273,9 +263,7 @@ app.post('/project/:id/sample_screen/add', function(req, res){
             if (err){
                 console.log("insert err" + JSON.stringify(result));
             } else{
-                console.log('-----------------------------------------------------------------');
-                console.log(getDateNow().toLocaleString() + ": added grids on project #" + req.params.id);
-                console.log('-----------------------------------------------------------------\n')
+                log_format("added grids on project #" + req.params.id)
                 res.redirect('/project/' + req.params.id + '/sample_screen/')
             };
         });
@@ -283,10 +271,7 @@ app.post('/project/:id/sample_screen/add', function(req, res){
     });
 });
 app.get('/project/:id/data_process', function(req, res){
-    
-    console.log('-----------------------------------------------------------------');
-    console.log(getDateNow().toLocaleString() + ": checking data processing on project id: " + req.params.id);
-    console.log('-----------------------------------------------------------------\n');
+    log_format("checking data processing on project id: " + req.params.id)
     res.render('data_process');
 });
 app.get('/:name/grid_detail/:id', function(req, res){
@@ -347,10 +332,7 @@ app.post('/:name/grid_detail/:id', function(req, res){
             res.send(err);
         }
         else{
-            console.log('test:' + gridPara.id);
-            console.log('-----------------------------------------------------------------');
-            console.log(getDateNow().toLocaleString() + ": upload info for grid " + req.params.id + " on " + req.params.name);
-            console.log('-----------------------------------------------------------------\n');
+            log_format("upload info for grid " + req.params.id + " on " + req.params.name)
             res.render('upload_done',{"gridPara": gridPara});
         }
     })
@@ -418,9 +400,7 @@ app.get('/data_para', function(req,res){
                 }
                 data_para_list.push(data_para);
             }
-            console.log('-----------------------------------------------------------------');
-            console.log(getDateNow().toLocaleString() + ": checking data parameters");
-            console.log('-----------------------------------------------------------------\n');
+            log_format("checking data parameters")
             res.render('data_para',{"data_para_list":data_para_list});
         }
         
@@ -456,9 +436,7 @@ app.get('/data_para/:date', function(req,res){
                     'defocus_range':rows[0].defocus_range,
                     'delay_after_stage_shift':rows[0].delay_after_stage_shift
                 }
-                console.log('-----------------------------------------------------------------');
-                console.log(getDateNow().toLocaleString() + ": checking data parameters: " + data.date);
-                console.log('-----------------------------------------------------------------\n');
+                log_format("checking data parameters: " + data.date);
                 res.render('data_details', {
                     "data": data
                 });
@@ -471,11 +449,7 @@ app.get('/data_para/:date', function(req,res){
 });
 
 app.get('/add_data', function(req, res){
-    
-    console.log('-----------------------------------------------------------------');
-    console.log(getDateNow().toLocaleString() + ": adding data");
-    console.log('-----------------------------------------------------------------\n');
-                
+    log_format("adding data")
     res.render('add_data');
 });
 
@@ -506,10 +480,7 @@ app.post('/add_data', function(req,res) {
     ];
     pool.query(sql, [values], function(err, result) {
         res.render('show_saved');
-        console.log('-----------------------------------------------------------------');
-        console.log(getDateNow().toLocaleString() + ": adding value: " + JSON.stringify(req.body));
-        console.log("add_result:" + JSON.stringify(result));
-        console.log('-----------------------------------------------------------------\n');
+        log_format(": adding value: " + JSON.stringify(req.body));
     });
     
 });
@@ -545,9 +516,7 @@ app.get('/data_para/:date/edit', function(req, res) {
                 res.render('edit_data', {
                     "data": data,
                 });
-                console.log('-----------------------------------------------------------------');
-                console.log(getDateNow().toLocaleString() + ": editing detail page on " + data.date);
-                console.log('-----------------------------------------------------------------\n');
+                log_format("editing detail page on " + data.date);
                 data_inserted = data.date;
                 
             } else{
@@ -595,18 +564,12 @@ app.post('/data_para/:date/edit', function(req,res) {
         });
         pool.query(sql, [values], function(err, result) {
             res.render('show_saved');
-            console.log('-----------------------------------------------------------------');
-            console.log(getDateNow().toLocaleString() + ": edited " + JSON.stringify(req.body)+ "\n");
-            console.log("insert result:" + JSON.stringify(result));
-            console.log('-----------------------------------------------------------------\n');
+            log_format("edited " + JSON.stringify(req.body));
         });
     }else{
         pool.query(sql_delete, function(err, result){
             if(err) throw err;
-            console.log('-----------------------------------------------------------------');
-            console.log(getDateNow().toLocaleString() + ": delete " + data_inserted + "\n");
-            console.log("delete result:" + JSON.stringify(result));
-            console.log('-----------------------------------------------------------------\n');
+            log_format("delete " + data_inserted);
             res.render('deleted');
         });
     }

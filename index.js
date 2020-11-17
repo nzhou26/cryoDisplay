@@ -15,7 +15,6 @@ const url = require("url");
 var log_format = require('./log_format')
 app.set('view engine', 'pug');
 app.set('views', './views');
-//var log_format = require('./log_format');
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 //app.use(upload.array()); 
@@ -30,11 +29,6 @@ function isEmpty(obj){
     }
     return true;
 }
-
-function getDateNow(){
-    var now = new Date();
-    return now;
-};
 
 var storage = multer.diskStorage({
     destination: function(req, file, cb) {

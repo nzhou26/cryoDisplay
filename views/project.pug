@@ -35,6 +35,10 @@ html
     -} else{
         form(action="/project/", method="POST")
             button(type="submit", name="kind", value="adding") Add Project
+        form(action="/project/", method="POST")
+            button(type="submit", name="kind", value="add_column") Add Parameter
+        form(action="/project/", method="POST")
+            button(type="submit", name="kind", value="delete") Delete Project
     - }
 
     

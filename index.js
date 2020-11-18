@@ -12,15 +12,17 @@ var mysql = require('mysql');
 var sql_config = require('./sql_config');
 const path = require('path');
 const url = require("url");
-var log_format = require('./log_format')
+var log_format = require('./log_format');
+//const morgan = require('morgan');
+
 app.set('view engine', 'pug');
 app.set('views', './views');
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 //app.use(upload.array()); 
-app.use(express.static('public'));
-
+app.use(express.static(path.join(__dirname, '../uploads')));
 app.use('../uploads', express.static(path.join(__dirname, '../uploads')));
+//app.use(morgan('dev'));
 
 function isEmpty(obj){
     for (var key in obj){
@@ -55,7 +57,33 @@ var upload = multer({
         cb("Error: File upload only supports the "
                 + "following filetypes - " + filetypes); 
     }
-}).single("mypic");
+})//.single(file_img);
+
+app.post('/:name/grid_detail/:id/:image', upload.single("file"), function(req, res) {
+    
+    //var file_img = req.params.image;
+    var pool = mysql.createPool(sql_config);
+    var sql_update = "UPDATE " + req.params.name +
+    " SET " + req.params.image + " = '" + req.file.filename +
+    "' WHERE id = " + req.params.id;
+    //log_format(sql_update);
+
+    if (!req.file){
+        log_format("no file received")
+        return res.send({
+            success:false
+        });
+    } else{
+        pool.query(sql_update, function(err, rows, result){
+            if (err){
+                log_format("insert err " + JSON.stringify(err))
+            } else {
+                log_format(req.params.image + ' file received')
+                res.redirect('/' + req.params.name + '/grid_detail/' + req.params.id);
+            };
+        });
+    };
+});
 
 app.get('/', function(req, res){
     
@@ -289,7 +317,8 @@ app.get('/:name/grid_detail/:id', function(req, res){
             'record':rows[0].record,
             'gel_filtration':rows[0].gel_filtration,
             'protein_electrophoresis':rows[0].protein_electrophoresis,
-            'name':req.params.name
+            'name':req.params.name,
+            'montage':rows[0].montage
         }
         if (passed == "biochem"){
             res.render('grid_detail', {"gridPara": gridPara, "biochem":true});
@@ -299,27 +328,12 @@ app.get('/:name/grid_detail/:id', function(req, res){
             log_format("editing sample making info on grid " + gridPara.id + " of project " + gridPara.name);
         } else{
             res.render('grid_detail', {"gridPara": gridPara});
-            log_format("checking grid " + req.params.id + " of project " +req.params.name);
+            log_format("checking grid " + gridPara.id + " of project " +gridPara.name);
         }
     });
 });
 
 app.post('/:name/grid_detail/:id', function(req, res){
-    if (req.body.kind == "biochem"){
-        res.redirect(url.format({
-            pathname: "/" + req.params.name + '/grid_detail/' + req.params.id,
-            query:{
-                "valid":"biochem"
-            }
-        }));
-    } else if (req.body.kind == "sample_making") {
-        res.redirect(url.format({
-            pathname: "/" + req.params.name + "/grid_detail/" + req.params.id,
-            query:{
-                "valid":"sample_making"
-            }
-        }));
-    }
     /*
     upload(req,res,function(err){
         if(err){
@@ -327,10 +341,28 @@ app.post('/:name/grid_detail/:id', function(req, res){
         }
         else{
             log_format("upload info for grid " + req.params.id + " on " + req.params.name)
-            res.render('upload_done',{"gridPara": gridPara});
         }
-    })
+    });
     */
+    if (req.body.kind == "biochem"){
+        log_format("redirecting to editing biochem on grid " + req.params.id + " of project " + req.params.name)
+        res.redirect(url.format({
+            pathname: "/" + req.params.name + '/grid_detail/' + req.params.id,
+            query:{
+                "valid":"biochem"
+            }
+        }));
+    } else if (req.body.kind == "sample_making") {
+        log_format("redirecting to editing sample making on grid " + req.params.id + " of project " + req.params.name)
+        res.redirect(url.format({
+            pathname: "/" + req.params.name + "/grid_detail/" + req.params.id,
+            query:{
+                "valid":"sample_making"
+            }
+        }));
+    };
+    
+    
 });
 
 app.post('/:name/grid_detail/:id/sample_making', function(req, res){
@@ -344,10 +376,10 @@ app.post('/:name/grid_detail/:id/sample_making', function(req, res){
     "', grid_type = '" + values[3] +
     "', sample_concentration = '" + values[4] +
     "' WHERE id = " + req.params.id;
-    console.log(sql_update);
+    //console.log(sql_update);
     pool.query(sql_update, function(err, rows, result){
         if (err){
-            console.log("insert err " + JSON.stringify(err));
+            log_format("insert err " + JSON.stringify(err));
         } else {
             log_format("successfully edited sample making parameters, redirecting to grid" + req.params.id +"detail")
             res.redirect('/' + req.params.name + '/grid_detail/' + req.params.id );

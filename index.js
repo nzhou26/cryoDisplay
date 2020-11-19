@@ -114,7 +114,10 @@ app.get('/project', function(req, res){
             }
             if (passed == "adding"){
                 log_format("adding projects");
-                res.render('project',{"projectsList":projectsList, "adding":passed});
+                res.render('project',{"projectsList":projectsList, "adding":true});
+            } else if (passed == "deleting"){
+                log_format("deleting projects");
+                res.render('project',{"projectsList":projectsList, "deleting":true})
             } else{
                 log_format("checking projects");
                 res.render('project',{"projectsList":projectsList});
@@ -125,14 +128,34 @@ app.get('/project', function(req, res){
     });
     //pool.end();
 });
+app.post('/project', function(req, res){
+    if (req.body.kind == "adding"){
+        log_format("redirect to adding project")
+        res.redirect(url.format({
+            pathname:"/project",
+            query:{
+                //"a":1,
+                //"b":2,
+                "valid":"adding"
+            }
+        }));
+    } else if (req.body.kind == "deleting"){
+        log_format("redirecting to deleting project");
+        res.redirect(url.format({
+            pathname:"/project",
+            query:{
+                "valid":"deleting"
+            }
+        }))
+    }
+});
 app.post('/project/add', function(req,res){
     var pool = mysql.createPool(sql_config);
     var sql_insert = "INSERT INTO projectsTable (name, owner, numberOfStructures) VALUES ?";
     var sql_sentence = "CREATE TABLE " + req.body.name + " (id INT NOT NULL PRIMARY KEY, date VARCHAR(45), \
     `column` VARCHAR(45), buffer VARCHAR(45),loading_volume VARCHAR(45), loading_concentration VARCHAR(45),\
     glow_discharge VARCHAR(45), blot_time VARCHAR(45), blot_force VARCHAR(45), grid_type VARCHAR(45),\
-    sample_concentration VARCHAR(45), atlas VARCHAR(45), view VARCHAR(45), record VARCHAR(45),\
-    gel_filtration VARCHAR(45), protein_electrophoresis VARCHAR(45))" ;
+    sample_concentration VARCHAR(45), gel_filtration VARCHAR(45), protein_electrophoresis VARCHAR(45), img_list VARCHAR(45))" ;
     var values =[
         [req.body.name,
         req.body.owner,
@@ -153,20 +176,32 @@ app.post('/project/add', function(req,res){
             });
         }
     })
-
-})
-app.post('/project', function(req, res){
-    if (req.body.kind == "adding"){
-        log_format("redirect to adding project")
-        res.redirect(url.format({
-            pathname:"/project",
-            query:{
-                //"a":1,
-                //"b":2,
-                "valid":"adding"
-            }
-        }));
-    }
+});
+app.post('/project/delete', function(req, res){
+    var pool = mysql.createPool(sql_config);
+    pool.query("SELECT * FROM projectsTable WHERE id = " + req.body.id, function(err, rows, result){
+        if (err){
+            res.send("no such an id " + err)
+        } else {
+            var project_name = rows[0].name;
+            pool.query("DELETE FROM projectsTable WHERE id = " + req.body.id, function(err, rows, result){
+                if(err){
+                    res.send("failed to delete");
+                } else {
+                    pool.query("DROP TABLE " + project_name, function(err){
+                        if(err){
+                            res.send("drop error" + err)
+                        } else{
+                            res.redirect('/project')
+                        }
+                    })
+                }
+            })
+        }
+    })
+    
+    
+    log_format(JSON.stringify(req.body))
 })
 app.get('/project/:id', function(req,res){
     var pool = mysql.createPool(sql_config);
@@ -182,7 +217,7 @@ app.get('/project/:id', function(req,res){
                     'owner':rows[0].owner,
                     'numberOfStructures':rows[0].numberOfStructures
                 }
-                log_format("checking project" + project.name)
+                log_format("checking project " + project.name)
                 res.render('details', {"project": project});
             } else{
                 res.status(404).json({"status_code":404, "status_message": "Not found"});
@@ -312,14 +347,14 @@ app.get('/:name/grid_detail/:id', function(req, res){
             'Blot Force':rows[0].blot_force,
             'Grid Type':rows[0].grid_type,
             'Sample Concentration':rows[0].sample_concentration,
-            'atlas':rows[0].atlas,
-            'view':rows[0].view,
-            'record':rows[0].record,
             'gel_filtration':rows[0].gel_filtration,
             'protein_electrophoresis':rows[0].protein_electrophoresis,
-            'name':req.params.name,
-            'montage':rows[0].montage
+            'name':req.params.name
         }
+        var img_list = {
+
+        }
+        log_format(JSON.stringify(rows[0].montage))
         if (passed == "biochem"){
             res.render('grid_detail', {"gridPara": gridPara, "biochem":true});
             log_format("editing biochem info on grid " + gridPara.id + " of project " + gridPara.name);

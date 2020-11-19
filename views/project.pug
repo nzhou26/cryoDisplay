@@ -20,7 +20,7 @@ html
                 td= project.owner
                 td= project.numberOfStructures
     br
-    - if (adding){
+    - if (adding) {
         form(action="/project/add", method="POST")
             label(for = "name") Project Name: 
             input(type="text", name = "name")
@@ -32,13 +32,19 @@ html
             input(type="text", name = "numberOfStructures")
             br
             button(type="submit") Save
-    -} else{
+    - } else if (deleting) {
+        form(action="/project/delete", method="POST")
+            label(for = "id" ) Type the project id you want to delete:
+            input(type="text", name ="id")
+            button(type="submit") Delete
+            br
+    - } else{
         form(action="/project/", method="POST")
             button(type="submit", name="kind", value="adding") Add Project
         form(action="/project/", method="POST")
             button(type="submit", name="kind", value="add_column") Add Parameter
         form(action="/project/", method="POST")
-            button(type="submit", name="kind", value="delete") Delete Project
+            button(type="submit", name="kind", value="deleting") Delete Project
     - }
 
     
